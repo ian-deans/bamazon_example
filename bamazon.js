@@ -1,11 +1,11 @@
 // Import the connection object from db.js
-const db = require("./db");
-const inquirer = require("inquirer");
+const db = require( "./db" );
+const inquirer = require( "inquirer" );
 
 // QUERY STRINGS
 const GET_ALL_ITEMS = "select * from items";
-const GET_ITEM = id => `select * from items where id=${id}`;
-const UPDATE_ITEM_STOCK = (id, quantity) => `update items set stock=stock - ${quantity} where id=${id}`;
+const GET_ITEM = id => `select * from items where id=${ id }`;
+const UPDATE_ITEM_STOCK = ( id, quantity ) => `update items set stock=stock - ${ quantity } where id=${ id }`;
 
 
 // Variables
@@ -66,30 +66,30 @@ async function main() {
 async function phaseAddItems() {
   let addingItems = true;
 
-  while(addingItems) {
+  while ( addingItems ) {
     await promptForItem()
-      .then(addItemToOrder);
+      .then( addItemToOrder );
 
     printOrder();
-    addingItems = (await promptIfAddingMoreItems()).continue;
+    addingItems = ( await promptIfAddingMoreItems() ).continue;
   }
-  return;  
+  return;
 };
 
 async function phaseProcessOrder() {
   printCart();
-  const userConfirmed = (await promptUserToConfirmOrder()).confirm
+  const userConfirmed = ( await promptUserToConfirmOrder() ).confirm
 
-  if (userConfirmed) {   
+  if ( userConfirmed ) {
     try {
-      await updateOrderedItems(order.items);
-      console.log("Order Completed")
-    } catch (error) {
-      console.error(error);
+      await updateOrderedItems( order.items );
+      console.log( "Order Completed" )
+    } catch ( error ) {
+      console.error( error );
     }
 
   } else {
-    console.log('Order Cancelled')
+    console.log( "Order Cancelled" )
   }
   shutdown();
 }
@@ -110,45 +110,45 @@ async function phaseProcessOrder() {
  */
 
 function promptForItem() {
-  return inquirer.prompt([
+  return inquirer.prompt( [
     {
-      type: 'list',
-      name: 'id',
-      message: 'Select an item from below:',
+      type: "list",
+      name: "id",
+      message: "Select an item from below:",
       choices: createItemChoices,
     },
     {
-      type: 'number',
-      name: 'quantity',
+      type: "number",
+      name: "quantity",
       message: answers => {
-        const stockAvailable = findItemById(answers.id).stock;
-        return `How many would you like to buy? (${stockAvailable} available)`;
+        const stockAvailable = findItemById( answers.id ).stock;
+        return `How many would you like to buy? (${ stockAvailable } available)`;
       },
-      validate: (userInput, answers) => {
-        if(isNaN(userInput)) {
+      validate: ( userInput, answers ) => {
+        if ( isNaN( userInput ) ) {
           return false;
         }
-        const stockAvailable = findItemById(answers.id).stock;
+        const stockAvailable = findItemById( answers.id ).stock;
         return userInput > 0 && stockAvailable >= userInput;
       },
     }
-  ])
+  ] )
 }
 
 function promptIfAddingMoreItems() {
-  return inquirer.prompt({
-      message: 'Add more items?',
-      type: 'confirm',
-      name: 'continue',
-    })
+  return inquirer.prompt( {
+    message: "Add more items?",
+    type: "confirm",
+    name: "continue",
+  } )
 };
 
 function promptUserToConfirmOrder() {
-  return inquirer.prompt({
-    message: 'Proceed with purchase?',
-    type: 'confirm',
-    name: 'confirm',
-  })
+  return inquirer.prompt( {
+    message: "Proceed with purchase?",
+    type: "confirm",
+    name: "confirm",
+  } )
 }
 
 
@@ -175,32 +175,32 @@ function promptUserToConfirmOrder() {
 
 
 function getItemsFromDB() {
-  return new Promise(function(resolve, reject) {
-    db.query(GET_ALL_ITEMS, (error, data) => {
+  return new Promise( function ( resolve, reject ) {
+    db.query( GET_ALL_ITEMS, ( error, data ) => {
 
       // Handle the error if there is one
-      if (error) {
-        console.error(error);
+      if ( error ) {
+        console.error( error );
         return reject();
       }
-  
+
       // If no error, set items locally
       items = data;
       return resolve()
-    })
-  })
+    } )
+  } )
 };
 
-function updateItemStock(id, quantity) {
-  return new Promise(function(resolve, reject) {
-    db.query(UPDATE_ITEM_STOCK(id, quantity), (error, data) => {
-      if (error) {
-        console.error(error);
+function updateItemStock( { id, quantity } ) {
+  return new Promise( function ( resolve, reject ) {
+    db.query( UPDATE_ITEM_STOCK( id, quantity ), ( error, data ) => {
+      if ( error ) {
+        console.error( error );
         return reject();
       }
       return resolve()
-    })
-  })
+    } )
+  } )
 }
 
 
@@ -217,72 +217,72 @@ function updateItemStock(id, quantity) {
  * as well as to increase code readability.
  */
 
-function addItemToOrder(item) {
-  const selected = findItemById(item.id);
+function addItemToOrder( item ) {
+  const selected = findItemById( item.id );
   item.cost = selected.price * item.quantity
-  order.items.push(item);
-  order.total_price = parseInt(order.total_price) + parseInt(item.cost)
+  order.items.push( item );
+  order.total_price = parseInt( order.total_price ) + parseInt( item.cost )
 }
 
 function createItemChoices() {
-  const choices = items.map(item => {
+  const choices = items.map( item => {
     return {
       name: item.name,
       short: item.name,
       value: item.id,
     }
-  })
+  } )
   return choices;
 }
 
-function findItemById(id) {
-  return items.find(item => item.id === id);
+function findItemById( id ) {
+  return items.find( item => item.id === id );
 }
 
 
 
 function printCart() {
 
-  const BAR = `${colors.bg.CYAN}                              ${colors.RESET}`;
-  const TITLE = `${colors.bg.CYAN}${colors.WHITE}        Purchase Items        ${colors.RESET}`;
-  const FOOTER = `Total Price: ${colors.GREEN} $${order.total_price} ${colors.RESET}`;
-  
+  const BAR = `${ colors.bg.CYAN }                              ${ colors.RESET }`;
+  const TITLE = `${ colors.bg.CYAN }${ colors.WHITE }        Purchase Items        ${ colors.RESET }`;
+  const FOOTER = `Total Price: ${ colors.GREEN } $${ order.total_price } ${ colors.RESET }`;
+
   const orderBreakdown = processOrderItems();
 
-  console.log(BAR);
-  console.log(TITLE)
-  console.log(BAR);
-  console.table(orderBreakdown);
-  console.log(FOOTER);
+  console.log( BAR );
+  console.log( TITLE )
+  console.log( BAR );
+  console.table( orderBreakdown );
+  console.log( FOOTER );
 }
 
 function printTitleScreen() {
   const BAR = colors.bg.WHITE + "                    " + colors.RESET;
   const TITLE = colors.bg.WHITE + colors.BLACK + "    Bamazon App     " + colors.RESET;
 
-  console.log(BAR);
-  console.log(TITLE);
-  console.log(BAR);
+  console.log( BAR );
+  console.log( TITLE );
+  console.log( BAR );
 }
 
 function printOrder() {
   const BAR = colors.bg.CYAN + colors.WHITE + "                     " + colors.RESET;
   const TITLE = colors.bg.CYAN + colors.WHITE + "        Order        " + colors.RESET;
 
-  console.log(BAR)
-  console.log(TITLE)
-  console.log(BAR)
-  console.table(processOrderItems());
+  console.log( BAR )
+  console.log( TITLE )
+  console.log( BAR )
+  console.table( processOrderItems() );
 };
 
 function processOrderItems() {
-  return order.items.map(orderItem => {
-    const {id, quantity} = orderItem
-    const {name, price} =  items.find(item => item.id === id);
-    const cost = parseInt(price) * parseInt(quantity);
-  
+  return order.items.map( orderItem => {
+    const { id, quantity } = orderItem
+    const { name, price } = items.find( item => item.id === id );
+    const cost = parseInt( price ) * parseInt( quantity );
+
     return { name, price, quantity, cost };
-  })
+  } )
 }
 
 function shutdown() {
@@ -291,8 +291,6 @@ function shutdown() {
 }
 
 // This function uses Promise.alll() to wait for multiple Promises to resolve.
-function updateOrderedItems(itemArray) {
-  return Promise.all([
-    itemArray.map(item => updateItemStock(item.id, item.quantity))
-  ]);
+function updateOrderedItems( itemArray ) {
+  return Promise.all( itemArray.map( updateItemStock ) );
 }
